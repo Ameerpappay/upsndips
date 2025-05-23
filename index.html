@@ -1,0 +1,632 @@
+<!DOCTYPE html>
+<html lang="en" style="background-color: #121829;">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chart Simulation</title>
+    <script src="https://unpkg.com/lightweight-charts@4.1.3/dist/lightweight-charts.standalone.production.js"></script>
+
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            background-color: #121829;
+            margin: 0;
+            color: #e0e6ed;
+            padding-top: 40px;
+        }
+
+        /* Top Bar */
+        #top-bar {
+            background-color: #1c2536;
+            width: 100%;
+            padding: 15px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-sizing: border-box;
+            margin-bottom: 30px;
+        }
+
+        #top-bar .logo {
+            font-size: 1.2em;
+            font-weight: bold;
+        }
+
+        #top-bar .user-actions {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+
+        #top-bar .user-actions span {
+            cursor: pointer;
+        }
+
+        #top-bar .user-icon {
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            background-color: #61afef;
+        }
+
+        /* Settings Section */
+        #settings-container {
+            width: 80%;
+            max-width: 700px;
+            margin-bottom: 30px;
+        }
+
+        .setting-item {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            font-size: 1em;
+            color: #abb2bf;
+            margin-bottom: 8px;
+        }
+
+        input[type="number"] {
+            background-color: #282c34;
+            color: #abb2bf;
+            padding: 12px;
+            border: 1px solid #3b4252;
+            border-radius: 6px;
+            width: 100%;
+            box-sizing: border-box;
+            font-size: 1em;
+        }
+
+        /* Controls */
+        #controls {
+            display: flex;
+            align-items: center;
+            margin-bottom: 30px;
+        }
+
+        button {
+            background-color: #61afef;
+            color: #282c34;
+            padding: 14px 30px;
+            border: none;
+            border-radius: 6px;
+            font-size: 1.1em;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+
+        button:hover {
+            background-color: #98c379;
+            color: #282c34;
+        }
+
+        button:disabled {
+            background-color: #4b566b;
+            cursor: not-allowed;
+            color: #abb2bf;
+        }
+
+        #logScaleCheckbox {
+            margin-right: 8px;
+            appearance: none;
+            -webkit-appearance: none;
+            -moz-appearance: none;
+            width: 16px;
+            height: 16px;
+            border: 1px solid #3b4252;
+            border-radius: 4px;
+            background-color: #282c34;
+            cursor: pointer;
+            position: relative;
+        }
+
+        #logScaleCheckbox:checked::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 8px;
+            height: 8px;
+            background-color: #61afef;
+            border-radius: 2px;
+        }
+
+        label[for="logScaleCheckbox"] {
+            font-size: 1em;
+            color: #abb2bf;
+            margin-left: 8px;
+        }
+
+        .log-chart-control {
+            display: flex;
+            align-items: center;
+            margin-left: 20px;
+        }
+
+        /* Chart Section */
+        #chart-section {
+            background-color: #1c2536;
+            border: 1px solid #3b4252;
+            border-radius: 8px;
+            padding: 30px;
+            margin-bottom: 30px;
+            width: 80%;
+            max-width: 900px;
+        }
+
+        #chart-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: baseline;
+            margin-bottom: 20px;
+        }
+
+        #chart-title {
+            font-size: 1.5em;
+            font-weight: bold;
+            color: #e0e6ed;
+        }
+
+        #chart-subtitle {
+            font-size: 0.9em;
+            color: #98c379;
+        }
+
+        #chartContainer {
+            width: 100%;
+            height: 300px;
+        }
+
+        /* Stats Section */
+        #stats-section {
+            width: 80%;
+            max-width: 900px;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .stat-box {
+            background-color: #1c2536;
+            border: 1px solid #3b4252;
+            border-radius: 8px;
+            padding: 15px;
+            text-align: center;
+        }
+
+        .stat-label {
+            color: #abb2bf;
+            font-size: 0.9em;
+            margin-bottom: 5px;
+        }
+
+        .stat-value {
+            font-size: 1.2em;
+            font-weight: bold;
+            color: #e0e6ed;
+        }
+
+        /* Current Price */
+        #currentPrice {
+            color: #abb2bf;
+            margin-top: 20px;
+        }
+
+        /* Simulation Rules Section */
+        #rules-section {
+            background-color: #1c2536;
+            border: 1px solid #3b4252;
+            border-radius: 8px;
+            padding: 20px;
+            width: 80%;
+            max-width: 900px;
+            margin-bottom: 30px;
+        }
+
+        #rules-section h3 {
+            color: #e0e6ed;
+            margin-bottom: 10px;
+        }
+
+        #rules-section p {
+            color: #abb2bf;
+            font-size: 0.9em;
+            line-height: 1.4;
+        }
+
+        @media (max-width: 768px) {
+            body {
+                padding-top: 20px;
+            }
+
+            #top-bar {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 10px;
+            }
+
+            #settings-container,
+            #chart-section,
+            #stats-section,
+            #rules-section {
+                width: 95%;
+                padding: 15px;
+            }
+
+            #controls {
+                flex-direction: column;
+                gap: 10px;
+                align-items: stretch;
+                width: 95%;
+            }
+
+            .log-chart-control {
+                margin-left: 0;
+                justify-content: flex-start;
+            }
+
+            button {
+                width: 100%;
+            }
+
+            #chartContainer {
+                height: 250px;
+            }
+
+            .stat-box {
+                padding: 12px;
+            }
+
+            #chart-header {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 8px;
+            }
+
+            label,
+            input[type="number"],
+            .stat-label,
+            .stat-value {
+                font-size: 0.95em;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div id="top-bar">
+        <div class="logo">UpsNDips</div>
+        <div class="user-actions">
+            <span>Stimulate</span>
+            <span style="cursor: pointer;">🔔</span>
+            <div class="user-icon"></div>
+        </div>
+    </div>
+
+    <div id="settings-container">
+        <div class="setting-item">
+            <label for="initialCapitalInput">Initial Capital</label>
+            <input type="number" id="initialCapitalInput" value="10000">
+        </div>
+        <div class="setting-item">
+            <label for="riskRewardRatioInput">Risk-Reward Ratio</label>
+            <input type="number" id="riskRewardRatioInput" value="2">
+        </div>
+        <div class="setting-item">
+            <label for="stopLossPctInput">Stop-Loss Percentage</label>
+            <input type="number" id="stopLossPctInput" value="5">
+        </div>
+    </div>
+
+    <div id="controls">
+        <button id="startBtn">Start Chart Simulation</button>
+        <div class="log-chart-control">
+            <input type="checkbox" id="logScaleCheckbox">
+            <label for="logScaleCheckbox">Log Chart</label>
+        </div>
+    </div>
+
+    <div id="chart-section">
+        <div id="chart-header">
+            <div style="display: flex; flex-direction: column; align-items: flex-start;">
+                <h2 id="chart-title">Simulation Chart</h2>
+                <p id="chart-subtitle"><span id="finalCapitalDisplay">$10,000</span> | <span
+                        id="percentageGainDisplay">+0%</span></p>
+            </div>
+        </div>
+        <div id="chartContainer"></div>
+    </div>
+
+    <div id="rules-section">
+        <h3>Simulation Rules</h3>
+        <p>
+            The simulation generates candlestick data with random fluctuations around the previous close price.
+            Trades are simulated at a defined frequency (every 5 data points).
+            Each trade calculates a stop-loss and target based on the input stop-loss percentage and risk-reward ratio.
+            A trade's outcome is determined by checking if the price reaches the stop-loss or target within the trade's
+            evaluation window.
+            If neither is hit within that window, the trade is automatically closed at the current price.
+        </p>
+    </div>
+
+    <div id="stats-section">
+        <div class="stat-box">
+            <div class="stat-label">Final Capital</div>
+            <div class="stat-value" id="finalCapitalStat">$10,000</div>
+        </div>
+        <div class="stat-box">
+            <div class="stat-label">Profit/Loss %</div>
+            <div class="stat-value" id="percentageGainStat">+0%</div>
+        </div>
+        <div class="stat-box">
+            <div class="stat-label">Win Rate</div>
+            <div class="stat-value" id="winRateStat">0%</div>
+        </div>
+        <div class="stat-box">
+            <div class="stat-label">Wins</div>
+            <div class="stat-value" id="winsStat">0</div>
+        </div>
+        <div class="stat-box">
+            <div class="stat-label">Losses</div>
+            <div class="stat-value" id="lossesStat">0</div>
+        </div>
+        <div class="stat-box">
+            <div class="stat-label">Total Trades</div>
+            <div class="stat-value" id="totalTradesStat">0</div>
+        </div>
+    </div>
+
+    <div id="currentPrice">Current Price: $100.00</div>
+
+    <script>
+        const chartContainer = document.getElementById('chartContainer');
+        const startBtn = document.getElementById('startBtn');
+        const currentPriceDisplay = document.getElementById('currentPrice');
+        const logScaleCheckbox = document.getElementById('logScaleCheckbox');
+        const tradeStatsDiv = document.getElementById('tradeStats'); // We might not directly use this anymore
+        const initialCapitalInput = document.getElementById('initialCapitalInput');
+        const riskRewardRatioInput = document.getElementById('riskRewardRatioInput');
+        const stopLossPctInput = document.getElementById('stopLossPctInput');
+
+        // UI elements for stats
+        const finalCapitalStat = document.getElementById('finalCapitalStat');
+        const percentageGainStat = document.getElementById('percentageGainStat');
+        const winRateStat = document.getElementById('winRateStat');
+        const winsStat = document.getElementById('winsStat');
+        const lossesStat = document.getElementById('lossesStat');
+        const totalTradesStat = document.getElementById('totalTradesStat');
+        const finalCapitalDisplay = document.getElementById('finalCapitalDisplay');
+        const percentageGainDisplay = document.getElementById('percentageGainDisplay');
+
+        // Add references to sections
+        const chartSection = document.getElementById('chart-section');
+        const statsSection = document.getElementById('stats-section');
+
+        let chart;
+        let series;
+        let dataPoints = [];
+        let currentPrice = 100;
+        let intervalId = null;
+        let startTime = Math.floor(Date.now() / 1000);
+        let dataCounter = 0;
+        const totalDataPoints = 300; // Reduced for quicker simulation
+
+        // Trading variables (will be set dynamically)
+        let capital;
+        let initialCapital;
+        let trades = [];
+        let tradeCounter = 0;
+        const tradeFrequency = 5; // Adjust trade frequency
+        let stopLossPercentage;
+        let targetRiskMultiple;
+        let targetPercentage;
+
+        function initializeChart() {
+            try {
+                chart = LightweightCharts.createChart(chartContainer, {
+                    width: chartContainer.clientWidth,
+                    height: chartContainer.clientHeight,
+                    layout: {
+                        background: { color: '#1c2536' },
+                        textColor: '#e0e6ed',
+                    },
+                    grid: {
+                        vertLines: { color: '#282c34' },
+                        horzLines: { color: '#282c34' },
+                    },
+                    timeScale: {
+                        timeVisible: false, // Simplified time scale
+                        secondsVisible: false,
+                        borderColor: '#3b4252'
+                    },
+                    rightPriceScale: {
+                        borderColor: '#3b4252',
+                        scaleMargins: { top: 0.1, bottom: 0.1 },
+                        mode: logScaleCheckbox.checked ? LightweightCharts.PriceScaleMode.Logarithmic : LightweightCharts.PriceScaleMode.Normal,
+                        textColor: '#e0e6ed'
+                    }
+                });
+
+                series = chart.addCandlestickSeries({
+                    upColor: '#98c379',
+                    downColor: '#e06c75',
+                    borderVisible: false,
+                    wickUpColor: '#98c379',
+                    wickDownColor: '#e06c75'
+                });
+
+                window.addEventListener('resize', () => {
+                    chart.resize(chartContainer.clientWidth, chartContainer.clientHeight);
+                });
+
+                logScaleCheckbox.addEventListener('change', () => {
+                    chart.applyOptions({
+                        rightPriceScale: {
+                            mode: logScaleCheckbox.checked ? LightweightCharts.PriceScaleMode.Logarithmic : LightweightCharts.PriceScaleMode.Normal
+                        }
+                    });
+                });
+
+            } catch (error) {
+                console.error('Error initializing chart:', error);
+            }
+        }
+
+        function generateSingleCandlestick(time) {
+            const open = dataPoints.length > 0 ? dataPoints[dataPoints.length - 1].close : currentPrice;
+            const percentageChange = (Math.random() * 0.2 - 0.1) + 0.0005; // Smaller fluctuations
+            const priceChange = open * percentageChange;
+            const close = Math.max(1, open + priceChange); // Ensure price doesn't go to zero
+            const fluctuation = open * 0.02;
+            const high = Math.max(open, close, open + (Math.random() * fluctuation));
+            const low = Math.min(open, close, open - (Math.random() * fluctuation));
+
+            const candlestick = {
+                time: time,
+                open: parseFloat(open.toFixed(2)),
+                high: parseFloat(high.toFixed(2)),
+                low: parseFloat(low.toFixed(2)),
+                close: parseFloat(close.toFixed(2))
+            };
+            currentPrice = close;
+            currentPriceDisplay.textContent = `Current Price: $${currentPrice.toFixed(2)}`;
+            return candlestick;
+        }
+
+        function addDataPoint() {
+            if (dataCounter < totalDataPoints) {
+                const currentTime = startTime + dataCounter;
+                const newCandlestick = generateSingleCandlestick(currentTime);
+                dataPoints.push(newCandlestick);
+                series.update(newCandlestick);
+                dataCounter++;
+
+                if (dataCounter % tradeFrequency === 0 && tradeCounter < totalDataPoints / tradeFrequency) {
+                    if (dataPoints.length >= tradeFrequency) {
+                        simulateTrade(newCandlestick.close);
+                        tradeCounter++;
+                    }
+                }
+
+            } else {
+                clearInterval(intervalId);
+                startBtn.disabled = false;
+                startBtn.textContent = 'Restart Chart Simulation';
+                calculateTradeStats();
+                console.log('Simulation finished.');
+
+                // Scroll to stats section when done
+                statsSection.scrollIntoView({ behavior: 'smooth' });
+            }
+        }
+
+        function simulateTrade(entryPrice) {
+            const stopLoss = entryPrice * (1 - stopLossPercentage / 100);
+            const target = entryPrice * (1 + targetPercentage / 100);
+            let outcome = 'pending';
+            let resolved = false;
+
+            const startIndex = Math.max(0, dataPoints.length - tradeFrequency);
+            for (let i = startIndex; i < dataPoints.length; i++) {
+                if (dataPoints[i].low <= stopLoss) {
+                    outcome = 'loss';
+                    capital -= capital * (stopLossPercentage / 100);
+                    resolved = true;
+                    break;
+                }
+                if (dataPoints[i].high >= target) {
+                    outcome = 'win';
+                    capital += capital * (targetPercentage / 100);
+                    resolved = true;
+                    break;
+                }
+            }
+
+            // Always push the trade, even if it's unresolved
+            trades.push({
+                entryPrice,
+                stopLoss,
+                target,
+                outcome,
+                exitPrice: resolved ? null : currentPrice
+            });
+
+            // For unresolved trades, adjust capital based on exit at current price
+            if (!resolved) {
+                if (currentPrice > entryPrice) {
+                    outcome = 'win';
+                    capital += capital * ((currentPrice - entryPrice) / entryPrice);
+                } else {
+                    outcome = 'loss';
+                    capital -= capital * ((entryPrice - currentPrice) / entryPrice);
+                }
+
+                // Update the last trade entry
+                trades[trades.length - 1].outcome = outcome;
+                trades[trades.length - 1].exitPrice = currentPrice;
+            }
+        }
+
+        function calculateTradeStats() {
+            let wins = 0;
+            let losses = 0;
+            trades.forEach(trade => {
+                if (trade.outcome === 'win') wins++;
+                else if (trade.outcome === 'loss') losses++;
+            });
+
+            const totalProfit = capital - initialCapital;
+            const percentageGain = (totalProfit / initialCapital) * 100;
+            const winRate = trades.length > 0 ? (wins / trades.length) * 100 : 0;
+
+            finalCapitalStat.textContent = `$${capital.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+            percentageGainStat.textContent = `${percentageGain.toFixed(2)}%`;
+            winRateStat.textContent = `${winRate.toFixed(2)}%`;
+            winsStat.textContent = wins;
+            lossesStat.textContent = losses;
+            totalTradesStat.textContent = trades.length;
+            finalCapitalDisplay.textContent = `$${capital.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+            percentageGainDisplay.textContent = `${percentageGain > 0 ? '+' : ''}${percentageGain.toFixed(2)}%`;
+        }
+
+        function startSimulation() {
+            startBtn.disabled = true;
+            startBtn.textContent = 'Running...';
+            dataPoints = [];
+            trades = [];
+            tradeCounter = 0;
+
+            // Scroll to chart section when simulation starts
+            chartSection.scrollIntoView({ behavior: 'smooth' });
+
+            // Get user-defined parameters
+            initialCapital = parseFloat(initialCapitalInput.value);
+            capital = initialCapital;
+            targetRiskMultiple = parseFloat(riskRewardRatioInput.value);
+            stopLossPercentage = parseFloat(stopLossPctInput.value);
+            targetPercentage = stopLossPercentage * targetRiskMultiple;
+
+            dataCounter = 0;
+            startTime = Math.floor(Date.now() / 1000);
+            currentPrice = 100;
+            currentPriceDisplay.textContent = `Current Price: $${currentPrice.toFixed(2)}`;
+            series.setData([]);
+
+            if (intervalId) {
+                clearInterval(intervalId);
+            }
+            intervalId = setInterval(addDataPoint, 25); // Adjust speed
+        }
+
+        startBtn.addEventListener('click', startSimulation);
+        initializeChart();
+    </script>
+
+</html>
